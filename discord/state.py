@@ -409,6 +409,8 @@ class ConnectionState(Generic[ClientT]):
 
     def store_sticker(self, guild: Guild, data: GuildStickerPayload) -> GuildSticker:
         sticker_id = int(data['id'])
+        if 'guild_id' not in data:
+            data['guild_id'] = guild.id
         self._stickers[sticker_id] = sticker = GuildSticker(state=self, data=data)
         return sticker
 
