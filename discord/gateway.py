@@ -749,6 +749,7 @@ class DiscordWebSocket:
         self,
         guild_id: int,
         channel_id: Optional[int],
+        connection_id: Optional[str],
         self_mute: bool = False,
         self_deaf: bool = False,
     ) -> None:
@@ -757,6 +758,7 @@ class DiscordWebSocket:
             'd': {
                 'guild_id': guild_id,
                 'channel_id': channel_id,
+                'connection_id': connection_id,
                 'self_mute': self_mute,
                 'self_deaf': self_deaf,
             },
