@@ -528,7 +528,8 @@ class MessageSnapshot:
         self.created_at: datetime.datetime = utils.parse_time(data['timestamp'])
         self._edited_timestamp: Optional[datetime.datetime] = utils.parse_time(data['edited_timestamp'])
         self.flags: MessageFlags = MessageFlags._from_value(data.get('flags', 0))
-        self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
+        # Fluxer uses 'stickers' instead of 'sticker_items'
+        self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('stickers', [])]
 
         self.components: List[MessageComponentType] = []
         for component_data in data.get('components', []):
@@ -2219,7 +2220,8 @@ class Message(PartialMessage, Hashable):
         self.nonce: Optional[Union[int, str]] = data.get('nonce')
         self.position: Optional[int] = data.get('position')
         self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
-        self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
+        # Fluxer uses 'stickers' instead of 'sticker_items'
+        self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('stickers', [])]
         self.message_snapshots: List[MessageSnapshot] = MessageSnapshot._from_value(state, data.get('message_snapshots'))
         # Set by Messageable.pins
         self._pinned_at: Optional[datetime.datetime] = None
