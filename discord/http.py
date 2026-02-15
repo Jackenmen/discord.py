@@ -910,7 +910,8 @@ class HTTPClient:
     ) -> Response[None]:
         r = Route('POST', '/channels/{channel_id}/messages/bulk-delete', channel_id=channel_id)
         payload = {
-            'messages': message_ids,
+            # Fluxer uses 'message_ids' instead of 'messages'
+            'message_ids': message_ids,
         }
 
         return self.request(r, json=payload, reason=reason)
