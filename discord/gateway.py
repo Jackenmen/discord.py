@@ -302,7 +302,7 @@ class DiscordWebSocket:
         _max_heartbeat_timeout: float
 
     # fmt: off
-    DEFAULT_GATEWAY    = yarl.URL('wss://gateway.discord.gg/')
+    DEFAULT_GATEWAY    = yarl.URL('wss://gateway.fluxer.app/')
     DISPATCH                    = 0
     HEARTBEAT                   = 1
     IDENTIFY                    = 2
@@ -566,7 +566,8 @@ class DiscordWebSocket:
         if event == 'READY':
             self.sequence = msg['s']
             self.session_id = data['session_id']
-            self.gateway = yarl.URL(data['resume_gateway_url'])
+            # Resume gateway URL is not provided by Fluxer - the initial URL should be reused
+            # self.gateway = yarl.URL(data['resume_gateway_url'])
             _log.info('Shard ID %s has connected to Gateway (Session ID: %s).', self.shard_id, self.session_id)
 
         elif event == 'RESUMED':
@@ -858,7 +859,7 @@ class DiscordVoiceWebSocket:
             'op': self.RESUME,
             'd': {
                 'token': state.token,
-                'server_id': str(state.server_id),
+                'guild_id': str(state.server_id),
                 'session_id': state.session_id,
                 'seq_ack': self.seq_ack,
             },
@@ -870,7 +871,7 @@ class DiscordVoiceWebSocket:
         payload = {
             'op': self.IDENTIFY,
             'd': {
-                'server_id': str(state.server_id),
+                'guild_id': str(state.server_id),
                 'user_id': str(state.user.id),
                 'session_id': state.session_id,
                 'token': state.token,

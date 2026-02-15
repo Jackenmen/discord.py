@@ -281,7 +281,8 @@ def parse_time(timestamp: Optional[str]) -> Optional[datetime.datetime]: ...
 
 def parse_time(timestamp: Optional[str]) -> Optional[datetime.datetime]:
     if timestamp:
-        return datetime.datetime.fromisoformat(timestamp)
+        # Fluxer returns timestamp with "Z" timezone - unsupported by Python 3.8
+        return datetime.datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
     return None
 
 
@@ -360,7 +361,7 @@ def oauth_url(
     :class:`str`
         The OAuth2 URL for inviting the bot into guilds.
     """
-    url = f'https://discord.com/oauth2/authorize?client_id={client_id}'
+    url = f'https://web.fluxer.app/oauth2/authorize?client_id={client_id}'
     if scopes is not None:
         url += '&scope=' + '+'.join(scopes or ('bot', 'applications.commands'))
     if permissions is not MISSING:
