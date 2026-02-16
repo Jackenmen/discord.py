@@ -1119,15 +1119,17 @@ class ConnectionState(Generic[ClientT]):
         self.dispatch('member_join', member)
 
     def parse_guild_member_remove(self, data: gw.GuildMemberRemoveEvent) -> None:
-        user = self.store_user(data['user'])
-        raw = RawMemberRemoveEvent(data, user)
+        # the user object in this event on Fluxer only contains
+        raw_user = data['user']
+        # user = self.store_user(raw_user)
+        raw = RawMemberRemoveEvent(data, None)
 
         guild = self._get_guild(raw.guild_id)
         if guild is not None:
             if guild._member_count is not None:
                 guild._member_count -= 1
 
-            member = guild.get_member(user.id)
+            member = guild.get_member(raw.user_id)
             if member is not None:
                 raw.user = member
                 guild._remove_member(member)

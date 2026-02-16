@@ -484,16 +484,19 @@ class RawMemberRemoveEvent(_RawReprMixin):
 
     Attributes
     ----------
+    user_id: :class:`int`
+        The ID of the user that left the guild.
     user: Union[:class:`discord.User`, :class:`discord.Member`]
         The user that left the guild.
     guild_id: :class:`int`
         The ID of the guild the user left.
     """
 
-    __slots__ = ('user', 'guild_id')
+    __slots__ = ('user_id', 'user', 'guild_id')
 
-    def __init__(self, data: GuildMemberRemoveEvent, user: User, /) -> None:
-        self.user: Union[User, Member] = user
+    def __init__(self, data: GuildMemberRemoveEvent, user: Optional[User], /) -> None:
+        self.user_id: int = int(data['user']['id'])
+        self.user: Optional[Union[User, Member]] = user
         self.guild_id: int = int(data['guild_id'])
 
 
