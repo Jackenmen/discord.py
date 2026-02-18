@@ -2328,6 +2328,12 @@ class Message(PartialMessage, Hashable):
         else:
             self.purchase_notification = PurchaseNotification(purchase_notification)
 
+        # these attributes are only sent by Fluxer when they're not empty
+        self.mentions = []
+        self.mention_roles = []
+        self.components = []
+        self.call: Optional[CallMessage] = None
+
         for handler in ('author', 'member', 'mentions', 'mention_roles', 'components', 'call'):
             try:
                 getattr(self, f'_handle_{handler}')(data[handler])  # type: ignore
@@ -2515,7 +2521,6 @@ class Message(PartialMessage, Hashable):
         self.interaction_metadata = MessageInteractionMetadata(state=self._state, guild=self.guild, data=data)
 
     def _handle_call(self, data: CallMessagePayload):
-        self.call: Optional[CallMessage]
         if data is not None:
             self.call = CallMessage(state=self._state, message=self, data=data)
         else:
