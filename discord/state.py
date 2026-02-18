@@ -622,10 +622,10 @@ class ConnectionState(Generic[ClientT]):
                         future = await self.chunk_guild(guild, wait=False)
                         states.append((guild, future))
                     else:
-                        if guild.unavailable is False:
-                            self.dispatch('guild_available', guild)
-                        else:
-                            self.dispatch('guild_join', guild)
+                        # if guild.unavailable is False:
+                        #     self.dispatch('guild_available', guild)
+                        # else:
+                        self.dispatch('guild_join', guild)
 
             for guild, future in states:
                 timeout = self._chunk_timeout(guild)
@@ -635,10 +635,10 @@ class ConnectionState(Generic[ClientT]):
                 except asyncio.TimeoutError:
                     _log.warning('Shard ID %s timed out waiting for chunks for guild_id %s.', guild.shard_id, guild.id)
 
-                if guild.unavailable is False:
-                    self.dispatch('guild_available', guild)
-                else:
-                    self.dispatch('guild_join', guild)
+                # if guild.unavailable is False:
+                #     self.dispatch('guild_available', guild)
+                # else:
+                self.dispatch('guild_join', guild)
 
             # remove the state
             try:
