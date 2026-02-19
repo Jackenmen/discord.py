@@ -2330,7 +2330,7 @@ class Message(PartialMessage, Hashable):
 
         # these attributes are only sent by Fluxer when they're not empty
         self.mentions = []
-        self.mention_roles = []
+        self.role_mentions = []
         self.components = []
         self.call: Optional[CallMessage] = None
 
