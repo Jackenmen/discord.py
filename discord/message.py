@@ -32,7 +32,6 @@ from os import PathLike
 from typing import (
     Dict,
     TYPE_CHECKING,
-    Literal,
     Sequence,
     Union,
     List,
@@ -513,12 +512,12 @@ class MessageSnapshot:
     def _from_value(
         cls,
         state: ConnectionState,
-        message_snapshots: Optional[List[Dict[Literal['message'], MessageSnapshotPayload]]],
+        message_snapshots: Optional[List[MessageSnapshotPayload]],
     ) -> List[Self]:
         if not message_snapshots:
             return []
 
-        return [cls(state, snapshot['message']) for snapshot in message_snapshots]
+        return [cls(state, snapshot) for snapshot in message_snapshots]
 
     def __init__(self, state: ConnectionState, data: MessageSnapshotPayload):
         self.type: MessageType = try_enum(MessageType, data['type'])
@@ -526,7 +525,8 @@ class MessageSnapshot:
         self.embeds: List[Embed] = [Embed.from_dict(a) for a in data['embeds']]
         self.attachments: List[Attachment] = [Attachment(data=a, state=state) for a in data['attachments']]
         self.created_at: datetime.datetime = utils.parse_time(data['timestamp'])
-        self._edited_timestamp: Optional[datetime.datetime] = utils.parse_time(data['edited_timestamp'])
+        # this attribute is only sent by Fluxer, if it's not empty
+        self._edited_timestamp: Optional[datetime.datetime] = utils.parse_time(data.get('edited_timestamp'))
         self.flags: MessageFlags = MessageFlags._from_value(data.get('flags', 0))
         # Fluxer uses 'stickers' instead of 'sticker_items'
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('stickers', [])]
