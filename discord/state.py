@@ -535,8 +535,8 @@ class ConnectionState(Generic[ClientT]):
         return guild
 
     def _guild_needs_chunking(self, guild: Guild) -> bool:
-        # If presences are enabled then we get back the old guild.large behaviour
-        return self._chunk_guilds and not guild.chunked and not (self._intents.presences and not guild.large)
+        # Fluxer needs chunking for small guilds
+        return self._chunk_guilds and not guild.chunked
 
     def _get_guild_channel(
         self, data: PartialMessagePayload, guild_id: Optional[int] = None
