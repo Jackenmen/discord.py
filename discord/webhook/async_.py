@@ -995,7 +995,8 @@ class BaseWebhook(Hashable):
 
     def _update(self, data: WebhookPayload) -> None:
         self.id: int = int(data['id'])
-        self.type: WebhookType = try_enum(WebhookType, int(data['type']))
+        # Fluxer only has one webhook type so far and this key does not exist
+        self.type: WebhookType = try_enum(WebhookType, int(data.get('type', WebhookType.incoming.value)))
         self.channel_id: Optional[int] = utils._get_as_snowflake(data, 'channel_id')
         self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
         self.name: Optional[str] = data.get('name')
