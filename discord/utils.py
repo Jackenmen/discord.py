@@ -871,7 +871,7 @@ def resolve_invite(invite: Union[Invite, str]) -> ResolvedInvite:
     if isinstance(invite, Invite):
         return ResolvedInvite(invite.code, invite.scheduled_event_id)
     else:
-        rx = r'(?:https?\:\/\/)?discord(?:\.gg|(?:app)?\.com\/invite)\/[^/]+'
+        rx = r'(?:https?\:\/\/)?(?:fluxer\.gg|web\.fluxer\.app\/invite)\/[^/]+'
         m = re.match(rx, invite)
 
         if m:
@@ -909,7 +909,7 @@ def resolve_template(code: Union[Template, str]) -> str:
     if isinstance(code, Template):
         return code.code
     else:
-        rx = r'(?:https?\:\/\/)?discord(?:\.new|(?:app)?\.com\/template)\/(.+)'
+        rx = r'(?:https?\:\/\/)?web\.fluxer\.app\/template\/(.+)'
         m = re.match(rx, code)
         if m:
             return m.group(1)
