@@ -191,7 +191,8 @@ class KeepAliveHandler(threading.Thread):
             except Exception:
                 self.stop()
             else:
-                self._last_send = time.perf_counter()
+                self._last_send = last_send = time.perf_counter()
+                _log.debug('Updated last send to: %s', last_send)
 
     def get_payload(self) -> Dict[str, Any]:
         return {
@@ -203,7 +204,8 @@ class KeepAliveHandler(threading.Thread):
         self._stop_ev.set()
 
     def tick(self) -> None:
-        self._last_recv = time.perf_counter()
+        self._last_recv = last_recv = time.perf_counter()
+        _log.debug('Updated last recv to: %s', last_recv)
 
     def ack(self) -> None:
         ack_time = time.perf_counter()
@@ -530,11 +532,13 @@ class DiscordWebSocket:
                 raise ReconnectWebSocket(self.shard_id)
 
             if op == self.HEARTBEAT_ACK:
+                _log.debug('Received HEARTBEAT_ACK')
                 if self._keep_alive:
                     self._keep_alive.ack()
                 return
 
             if op == self.HEARTBEAT:
+                _log.debug('Received HEARTBEAT')
                 if self._keep_alive:
                     beat = self._keep_alive.get_payload()
                     await self.send_as_json(beat)
@@ -677,12 +681,14 @@ class DiscordWebSocket:
                 raise ConnectionClosed(self.socket, shard_id=self.shard_id) from exc
 
     async def send_heartbeat(self, data: Any) -> None:
+        _log.debug('Sending HEARTBEAT')
         # This bypasses the rate limit handling code since it has a higher priority
         try:
             await self.socket.send_str(utils._to_json(data))
         except RuntimeError as exc:
             if not self._can_handle_close():
                 raise ConnectionClosed(self.socket, shard_id=self.shard_id) from exc
+        _log.debug('Sent HEARTBEAT')
 
     async def change_presence(
         self,
