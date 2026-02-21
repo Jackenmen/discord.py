@@ -1952,7 +1952,11 @@ class AutoShardedConnectionState(ConnectionState[ClientT]):
         if self._ready_task is not None:
             self._ready_task.cancel()
 
-        shard_id = data['shard'][0]  # shard_id, num_shards
+        # Fluxer does not support sharding yet so there's no shard data returned.
+        if self.shard_count == 1:
+            shard_id = 0
+        else:
+            shard_id = data['shard'][0]  # shard_id, num_shards
 
         if shard_id in self._ready_tasks:
             self._ready_tasks[shard_id].cancel()
