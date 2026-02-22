@@ -54,13 +54,13 @@ class ClientStatus:
 
     __slots__ = ('_status', 'desktop', 'mobile', 'web')
 
-    def __init__(self, *, status: str = MISSING, data: ClientStatusPayload = MISSING) -> None:
+    def __init__(self, *, status: str = MISSING, mobile: bool = False) -> None:
         self._status: str = status or 'offline'
 
-        data = data or {}
-        self.desktop: Optional[str] = data.get('desktop')
-        self.mobile: Optional[str] = data.get('mobile')
-        self.web: Optional[str] = data.get('web')
+        # Fluxer only exposes whether a user is on mobile or not, it does not have separate statuses on each client
+        self.desktop: Optional[str] = self._status if not mobile else None
+        self.mobile: Optional[str] = self._status if mobile else None
+        self.web: Optional[str] = self._status if not mobile else None
 
     def __repr__(self) -> str:
         attrs = [
@@ -145,7 +145,9 @@ class RawPresenceUpdateEvent(_RawReprMixin):
 
     def __init__(self, *, data: PartialPresenceUpdate, state: ConnectionState) -> None:
         self.user_id: int = int(data['user']['id'])
-        self.client_status: ClientStatus = ClientStatus(status=data['status'], data=data['client_status'])
-        self.activities: Tuple[ActivityTypes, ...] = tuple(create_activity(d, state) for d in data['activities'])
+        # Fluxer only exposes whether a user is on mobile or not, it does not have separate statuses on each client
+        self.client_status: ClientStatus = ClientStatus(status=data['status'], mobile=data['mobile'])
+        # Fluxer does not have activities
+        self.activities: Tuple[ActivityTypes, ...] = tuple(create_activity(d, state) for d in data.get('activities', []))
         self.guild_id: Optional[int] = _get_as_snowflake(data, 'guild_id')
         self.guild: Optional[Guild] = state._get_guild(self.guild_id)
