@@ -284,6 +284,8 @@ class DiscordWebSocket:
         a connection issue.
     GUILD_SYNC
         Send only. Requests a guild sync.
+    LAZY_REQUEST
+        Send only. Requests lazy-loaded guild data, i.e. subscribes to relevant events.
     gateway
         The gateway we are currently connected to.
     token
@@ -316,6 +318,7 @@ class DiscordWebSocket:
     HELLO                       = 10
     HEARTBEAT_ACK               = 11
     GUILD_SYNC                  = 12
+    LAZY_REQUEST                = 14
     # fmt: on
 
     def __init__(self, socket: aiohttp.ClientWebSocketResponse, *, loop: asyncio.AbstractEventLoop) -> None:
@@ -742,6 +745,39 @@ class DiscordWebSocket:
 
         if query is not None:
             payload['d']['query'] = query
+
+        await self.send_as_json(payload)
+
+    async def update_lazy_subscriptions(
+        self,
+        guild_id: int,
+        *,
+        active: Optional[bool] = None,
+        sync: Optional[bool] = None,
+        typing: Optional[bool] = None,
+        member_list_channel_ids: List[int] = None,
+        member_ids: Optional[List[int]] = None,
+    ) -> None:
+        subscription: Any = {}
+        if active is not None:
+            subscription['active'] = active
+        if sync is not None:
+            subscription['sync'] = sync
+        if typing is not None:
+            subscription['typing'] = typing
+        if member_ids is not None:
+            subscription['members'] = member_ids
+        if member_list_channel_ids is not None:
+            subscription['member_list_channels'] = member_list_channel_ids
+
+        payload = {
+            'op': self.LAZY_REQUEST,
+            'd': {
+                'subscriptions': {
+                    str(guild_id): subscription,
+                },
+            },
+        }
 
         await self.send_as_json(payload)
 
