@@ -683,6 +683,12 @@ class Guild(Hashable):
                 soundboard_sound = SoundboardSound(guild=self, data=s, state=self._state)
                 self._add_soundboard_sound(soundboard_sound)
 
+    async def _subscribe_to_presence_updates(self) -> None:
+        # This is an ugly hack to get presence updates for all members by subscribing to
+        # each of the guild's members as they are not being sent otherwise.
+        ws = self._state._get_websocket(self.id)
+        await ws.update_lazy_subscriptions(guild_id=self.id, member_ids=list(self._members))
+
     @property
     def channels(self) -> Sequence[GuildChannel]:
         """Sequence[:class:`abc.GuildChannel`]: A list of channels that belongs to this guild."""

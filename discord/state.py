@@ -314,7 +314,11 @@ class ConnectionState(Generic[ClientT]):
         else:
             self._messages: Optional[Deque[Message]] = None
 
-    def process_chunk_requests(self, guild_id: int, nonce: Optional[str], members: List[Member], complete: bool) -> None:
+    def _update_guild_member_subscriptions(self, guild: Guild) -> None:
+        asyncio.create_task(guild._subscribe_to_presence_updates())
+
+    def process_chunk_requests(self, guild: Guild, nonce: Optional[str], members: List[Member], complete: bool) -> None:
+        guild_id = guild.id
         removed = []
         for key, request in self._chunk_requests.items():
             if request.guild_id == guild_id and request.nonce == nonce:
@@ -325,6 +329,8 @@ class ConnectionState(Generic[ClientT]):
 
         for key in removed:
             del self._chunk_requests[key]
+
+        self._update_guild_member_subscriptions(guild)
 
     def clear_chunk_requests(self, shard_id: int | None) -> None:
         removed = []
@@ -1118,6 +1124,7 @@ class ConnectionState(Generic[ClientT]):
         member = Member(guild=guild, data=data, state=self)
         if self.member_cache_flags.joined:
             guild._add_member(member)
+            self._update_guild_member_subscriptions(guild)
 
         if guild._member_count is not None:
             guild._member_count += 1
@@ -1343,6 +1350,7 @@ class ConnectionState(Generic[ClientT]):
             self.dispatch('guild_available', guild)
         else:
             self.dispatch('guild_join', guild)
+        self._update_guild_member_subscriptions(guild)
 
     def parse_guild_update(self, data: gw.GuildUpdateEvent) -> None:
         guild = self._get_guild(int(data['id']))
@@ -1457,7 +1465,7 @@ class ConnectionState(Generic[ClientT]):
                     member._presence_update(raw_presence, user)
 
         complete = data.get('chunk_index', 0) + 1 == data.get('chunk_count')
-        self.process_chunk_requests(guild_id, data.get('nonce'), members, complete)
+        self.process_chunk_requests(guild, data.get('nonce'), members, complete)
 
     def parse_guild_integrations_update(self, data: gw.GuildIntegrationsUpdateEvent) -> None:
         guild = self._get_guild(int(data['guild_id']))
