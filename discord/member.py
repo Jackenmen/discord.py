@@ -59,6 +59,7 @@ if TYPE_CHECKING:
     from .guild import Guild
     from .activity import ActivityTypes
     from .presences import RawPresenceUpdateEvent
+    from .types.activity import PartialSessionUpdate
     from .types.member import (
         MemberWithUser as MemberWithUserPayload,
         Member as MemberPayload,
@@ -447,6 +448,10 @@ class Member(discord.abc.Messageable, _UserTag):
 
         if len(user) > 1:
             return self._update_inner_user(user)
+
+    def _session_update(self, data: PartialSessionUpdate) -> None:
+        self.client_status = ClientStatus(status=data['status'], mobile=data['mobile'])
+        self.afk = data['afk']
 
     def _update_inner_user(self, user: UserPayload) -> Optional[Tuple[User, User]]:
         u = self._user

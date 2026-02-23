@@ -40,6 +40,10 @@ class PartialSessionUpdate(TypedDict):
     afk: bool
 
 
+class SessionUpdate(PartialSessionUpdate):
+    session_id: str
+
+
 class PartialPresenceUpdate(PartialSessionUpdate):
     user: User
     guild_id: Snowflake

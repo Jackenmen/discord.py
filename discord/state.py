@@ -870,6 +870,16 @@ class ConnectionState(Generic[ClientT]):
 
         self.dispatch('presence_update', old_member, member)
 
+    def parse_sessions_replace(self, data: gw.SessionsReplaceEvent) -> None:
+        for session in data:
+            if session['session_id'] == 'all':
+                for guild in self._guilds.values():
+                    member = guild.me
+                    old_member = Member._copy(member)
+                    member._session_update(session)
+                    self.dispatch('presence_update', old_member, member)
+                break
+
     def parse_user_update(self, data: gw.UserUpdateEvent) -> None:
         if self.user:
             self.user._update(data)
