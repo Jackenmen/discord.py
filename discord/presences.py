@@ -27,7 +27,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Tuple
 
 from .activity import create_activity
-from .enums import Status, try_enum
+from .enums import ActivityType, Status, try_enum
 from .utils import MISSING, _get_as_snowflake, _RawReprMixin
 
 if TYPE_CHECKING:
@@ -149,8 +149,30 @@ class RawPresenceUpdateEvent(_RawReprMixin):
         self.user_id: int = int(data['user']['id'])
         # Fluxer only exposes whether a user is on mobile or not, it does not have separate statuses on each client
         self.client_status: ClientStatus = ClientStatus(status=data['status'], mobile=data['mobile'])
-        # Fluxer does not have activities
-        self.activities: Tuple[ActivityTypes, ...] = tuple(create_activity(d, state) for d in data.get('activities', []))
+        # Fluxer does not return activities, if they are empty
+        raw_activities = data.get('activities', [])
+        custom_status = data['custom_status']
+        if custom_status is not None:
+            emoji_id = custom_status.get('emoji_id')
+            emoji = (
+                custom_status['emoji_name']
+                if emoji_id is None
+                else {
+                    'id': emoji_id,
+                    'name': custom_status['emoji_name'],
+                    'animated': custom_status['emoji_animated'],
+                }
+            )
+            raw_activities.append(
+                {
+                    'type': ActivityType.custom.value,
+                    'name': custom_status['text'],
+                    'state': custom_status['text'],
+                    'emoji': emoji,
+                    'created_at': None,
+                }
+            )
+        self.activities: Tuple[ActivityTypes, ...] = tuple(create_activity(d, state) for d in raw_activities)
         self.afk = data['afk']
         self.guild_id: Optional[int] = _get_as_snowflake(data, 'guild_id')
         self.guild: Optional[Guild] = state._get_guild(self.guild_id)
