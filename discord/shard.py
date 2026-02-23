@@ -564,6 +564,7 @@ class AutoShardedClient(Client):
         *,
         activity: Optional[BaseActivity] = None,
         status: Optional[Status] = None,
+        mobile: bool = False,
         shard_id: Optional[int] = None,
     ) -> None:
         """|coro|
@@ -589,6 +590,8 @@ class AutoShardedClient(Client):
         status: Optional[:class:`Status`]
             Indicates what status to change to. If ``None``, then
             :attr:`Status.online` is used.
+        mobile: :class:`bool`
+            Indicates whether the client user should show as being on mobile.
         shard_id: Optional[:class:`int`]
             The shard_id to change the presence to. If not specified
             or ``None``, then it will change the presence of every
@@ -612,12 +615,12 @@ class AutoShardedClient(Client):
 
         if shard_id is None:
             for shard in self.__shards.values():
-                await shard.ws.change_presence(activity=activity, status=status_value)
+                await shard.ws.change_presence(activity=activity, status=status_value, mobile=mobile)
 
             guilds = self._connection.guilds
         else:
             shard = self.__shards[shard_id]
-            await shard.ws.change_presence(activity=activity, status=status_value)
+            await shard.ws.change_presence(activity=activity, status=status_value, mobile=mobile)
             guilds = [g for g in self._connection.guilds if g.shard_id == shard_id]
 
         activities = () if activity is None else (activity,)

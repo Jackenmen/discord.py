@@ -40,7 +40,7 @@ import aiohttp
 import yarl
 
 from . import utils
-from .activity import BaseActivity
+from .activity import BaseActivity, CustomActivity
 from .enums import SpeakingState
 from .errors import ConnectionClosed
 
@@ -696,14 +696,22 @@ class DiscordWebSocket:
         *,
         activity: Optional[BaseActivity] = None,
         status: Optional[str] = None,
+        mobile: bool = False,
         since: float = 0.0,
     ) -> None:
-        if activity is not None:
+        custom_status = None
+        if activity is None:
+            activities = []
+        elif isinstance(activity, CustomActivity):
+            custom_status = {'text': activity.state}
+            if activity.emoji:
+                for key, value in activity.emoji.to_dict().items():
+                    custom_status[f"emoji_{key}"] = value
+            activities = []
+        else:
             if not isinstance(activity, BaseActivity):
                 raise TypeError('activity must derive from BaseActivity.')
             activities = [activity.to_dict()]
-        else:
-            activities = []
 
         if status == 'idle':
             since = int(time.time() * 1000)
@@ -711,9 +719,9 @@ class DiscordWebSocket:
         payload = {
             'op': self.PRESENCE,
             'd': {
-                'activities': activities,
                 'afk': False,
-                'since': since,
+                'custom_status': custom_status,
+                'mobile': mobile,
                 'status': status,
             },
         }

@@ -2064,6 +2064,7 @@ class Client:
         *,
         activity: Optional[BaseActivity] = None,
         status: Optional[Status] = None,
+        mobile: bool = False,
     ) -> None:
         """|coro|
 
@@ -2091,6 +2092,8 @@ class Client:
         status: Optional[:class:`.Status`]
             Indicates what status to change to. If ``None``, then
             :attr:`.Status.online` is used.
+        mobile: :class:`bool`
+            Indicates whether the client user should show as being on mobile.
 
         Raises
         ------
@@ -2107,7 +2110,7 @@ class Client:
         else:
             status_str = str(status)
 
-        await self.ws.change_presence(activity=activity, status=status_str)
+        await self.ws.change_presence(activity=activity, status=status_str, mobile=mobile)
 
         for guild in self._connection.guilds:
             me = guild.me
