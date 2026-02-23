@@ -139,9 +139,11 @@ class RawPresenceUpdateEvent(_RawReprMixin):
     activities: Tuple[Union[:class:`BaseActivity`, :class:`Spotify`]]
         The activities the user is currently doing. Due to a Discord API limitation, a user's Spotify activity may not appear
         if they are listening to a song with a title longer than ``128`` characters. See :issue:`1738` for more information.
+    afk: :class:`bool`
+        The AFK status of the user that triggered the presence update.
     """
 
-    __slots__ = ('user_id', 'guild_id', 'guild', 'client_status', 'activities')
+    __slots__ = ('user_id', 'guild_id', 'guild', 'client_status', 'activities', 'afk')
 
     def __init__(self, *, data: PartialPresenceUpdate, state: ConnectionState) -> None:
         self.user_id: int = int(data['user']['id'])
@@ -149,5 +151,6 @@ class RawPresenceUpdateEvent(_RawReprMixin):
         self.client_status: ClientStatus = ClientStatus(status=data['status'], mobile=data['mobile'])
         # Fluxer does not have activities
         self.activities: Tuple[ActivityTypes, ...] = tuple(create_activity(d, state) for d in data.get('activities', []))
+        self.afk = data['afk']
         self.guild_id: Optional[int] = _get_as_snowflake(data, 'guild_id')
         self.guild: Optional[Guild] = state._get_guild(self.guild_id)

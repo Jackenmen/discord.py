@@ -283,6 +283,7 @@ class Member(discord.abc.Messageable, _UserTag):
         'timed_out_until',
         '_permissions',
         'client_status',
+        'afk',
         '_user',
         '_state',
         '_avatar',
@@ -320,6 +321,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self.premium_since: Optional[datetime.datetime] = utils.parse_time(data.get('premium_since'))
         self._roles: utils.SnowflakeList = utils.SnowflakeList(map(int, data['roles']))
         self.client_status: ClientStatus = ClientStatus()
+        self.afk: bool = False
         self.activities: Tuple[ActivityTypes, ...] = ()
         self.nick: Optional[str] = data.get('nick', None)
         self.pending: bool = data.get('pending', False)
@@ -441,6 +443,7 @@ class Member(discord.abc.Messageable, _UserTag):
     def _presence_update(self, raw: RawPresenceUpdateEvent, user: UserPayload) -> Optional[Tuple[User, User]]:
         self.activities = raw.activities
         self.client_status = raw.client_status
+        self.afk = raw.afk
 
         if len(user) > 1:
             return self._update_inner_user(user)
