@@ -660,6 +660,7 @@ class DiscordWebSocket:
             # reconnecting in a loop forever. Let's just make sure we actually have
             # what it takes to resume.
             resume = self.session_id is not None
+            await self.socket.close(code=4000)
             if isinstance(e, asyncio.TimeoutError):
                 _log.debug('Timed out receiving packet. Attempting a reconnect.')
                 raise ReconnectWebSocket(self.shard_id, resume=resume) from None
