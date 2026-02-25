@@ -655,14 +655,19 @@ class DiscordWebSocket:
                 self._keep_alive.stop()
                 self._keep_alive = None
 
+            # While Discord will simply send INVALIDATE_SESSION when session_id is None,
+            # Fluxer will instead close the connection with 4002 meaning we can end up
+            # reconnecting in a loop forever. Let's just make sure we actually have
+            # what it takes to resume.
+            resume = self.session_id is not None
             if isinstance(e, asyncio.TimeoutError):
                 _log.debug('Timed out receiving packet. Attempting a reconnect.')
-                raise ReconnectWebSocket(self.shard_id) from None
+                raise ReconnectWebSocket(self.shard_id, resume=resume) from None
 
             code = self._close_code or self.socket.close_code
             if self._can_handle_close():
                 _log.debug('Websocket closed with %s, attempting a reconnect.', code)
-                raise ReconnectWebSocket(self.shard_id, resume=self.session_id is not None) from None
+                raise ReconnectWebSocket(self.shard_id, resume=resume) from None
             else:
                 _log.debug('Websocket closed with %s, cannot reconnect.', code)
                 raise ConnectionClosed(self.socket, shard_id=self.shard_id, code=code) from None
