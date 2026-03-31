@@ -742,7 +742,8 @@ class AuditLogEntry(Hashable):
             elif self.action is enums.AuditLogAction.member_move or self.action is enums.AuditLogAction.message_delete:
                 channel_id = int(extra['channel_id'])
                 self.extra = _AuditLogProxyMemberMoveOrMessageDelete(
-                    count=int(extra['count']),
+                    # Fluxer does not include 'count' on message delete event
+                    count=int(extra.get('count', 1)),
                     channel=self.guild.get_channel_or_thread(channel_id) or Object(id=channel_id),
                 )
             elif self.action is enums.AuditLogAction.member_disconnect:
