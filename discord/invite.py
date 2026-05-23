@@ -465,7 +465,9 @@ class Invite(Hashable):
     def from_gateway(cls, *, state: ConnectionState, data: GatewayInvitePayload) -> Self:
         guild_id: Optional[int] = _get_as_snowflake(data, 'guild_id')
         guild: Optional[Union[Guild, Object]] = state._get_guild(guild_id)
-        channel_id = int(data['channel_id'])
+        # Fluxer's INVITE_CREATE contains a partial channel object instead of the 'channel_id' key
+        channel_data = data.get('channel')
+        channel_id = int(channel_data['id'] if channel_data is not None else data['channel_id'])
         if guild is not None:
             channel = guild.get_channel(channel_id) or Object(id=channel_id)
         else:

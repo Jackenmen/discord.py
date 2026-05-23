@@ -72,7 +72,7 @@ class InviteWithCounts(Invite, _GuildPreviewUnique): ...
 
 
 class GatewayInviteCreate(TypedDict):
-    channel_id: Snowflake
+    channel: PartialChannel
     code: str
     created_at: str
     expires_at: Optional[str]
