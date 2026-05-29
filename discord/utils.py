@@ -1432,7 +1432,7 @@ if _HAS_ZSTD:
 
         def __init__(self) -> None:
             decompressor = zstandard.ZstdDecompressor()
-            self.context = decompressor.decompressobj()
+            self.context = decompressor.decompressobj(read_across_frames=True)
 
         def decompress(self, data: bytes, /) -> str | None:
             # Each WS message is a complete gateway message
